@@ -18,9 +18,15 @@
     "body-parser": "^1.18.3",
     "express": "^4.16.3",
     "express-validator": "^5.3.0",
+<<<<<<< HEAD
     "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.3.2",
     "multer": "^1.4.0"
+=======
+    "jsonwebtoken": "^8.4.0",
+    "mongoose": "^5.4.0",
+    "multer": "^1.4.1"
+>>>>>>> 5e7c05f76164c804c6c0df0325ad9a6490543062
   },
   "devDependencies": {
     "nodemon": "^1.18.4"
