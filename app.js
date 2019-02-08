@@ -10,12 +10,16 @@ const authRoutes = require('./routes/auth');
 
 const app = express();
 
-const fileStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
+const uuidv4 = require('uuid/v4');
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
     cb(null, 'images');
   },
-  filename: (req, file, cb) => {
-    cb(null, new Date().toISOString() + '-' + file.originalname);
+  filename: function (req, file, cb) {
+    cb(null, uuidv4())
   }
 });
 
@@ -34,9 +38,8 @@ const fileFilter = (req, file, cb) => {
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
 app.use(
-  multer({ storage: fileStorage, fileFilter: fileFilter }).single('image')
+  multer({ storage: storage, fileFilter: fileFilter }).single('image')
 );
-app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -51,8 +54,6 @@ app.use((req, res, next) => {
 app.use('/feed', feedRoutes);
 app.use('/auth', authRoutes);
 
-
-//error handling
 app.use((error, req, res, next) => {
   console.log(error);
   const status = error.statusCode || 500;
