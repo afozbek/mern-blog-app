@@ -63,7 +63,7 @@ app.use((error, req, res, next) => {
 
 mongoose
   .connect(
-    'mongodb+srv://afozbek:admin@myprojects-ggr2u.mongodb.net/messages'
+    'mongodb+srv://afozbek:admin@myprojects-ggr2u.mongodb.net/messages?retryWrites=true'
   )
   .then(result => {
     app.listen(8080);

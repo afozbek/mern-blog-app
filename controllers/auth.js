@@ -16,7 +16,7 @@ exports.signup = async (req, res, next) => {
   const name = req.body.name;
   const password = req.body.password;
   try {
-    const hashedPw = await bcrypt.hash(password, 12)
+    const hashedPw = await bcrypt.hash(password, 12);
 
     const user = new User({
       email: email,
@@ -46,7 +46,6 @@ exports.login = async (req, res, next) => {
     }
     loadedUser = user;
     const isEqual = await bcrypt.compare(password, user.password);
-
     if (!isEqual) {
       const error = new Error('Wrong password!');
       error.statusCode = 401;
@@ -71,8 +70,7 @@ exports.login = async (req, res, next) => {
 
 exports.getUserStatus = async (req, res, next) => {
   try {
-    const user = User.findById(req.userId)
-
+    const user = await User.findById(req.userId);
     if (!user) {
       const error = new Error('User not found.');
       error.statusCode = 404;
@@ -85,14 +83,12 @@ exports.getUserStatus = async (req, res, next) => {
     }
     next(err);
   }
-
 };
 
 exports.updateUserStatus = async (req, res, next) => {
   const newStatus = req.body.status;
   try {
-    const user = User.findById(req.userId)
-
+    const user = await User.findById(req.userId);
     if (!user) {
       const error = new Error('User not found.');
       error.statusCode = 404;

@@ -10,13 +10,10 @@ exports.getPosts = async (req, res, next) => {
   const currentPage = req.query.page || 1;
   const perPage = 2;
   try {
-    const totalItems =
-      await Post.find().countDocuments();
-    //await gets 'then' block behind the hook
+    const totalItems = await Post.find().countDocuments();
     const posts = await Post.find()
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
-
 
     res.status(200).json({
       message: 'Fetched posts successfully.',
@@ -46,7 +43,6 @@ exports.createPost = async (req, res, next) => {
   const imageUrl = req.file.path;
   const title = req.body.title;
   const content = req.body.content;
-
   const post = new Post({
     title: title,
     content: content,
@@ -54,12 +50,10 @@ exports.createPost = async (req, res, next) => {
     creator: req.userId
   });
   try {
-    await post.save()
-
-    const user = User.findById(req.userId);
+    await post.save();
+    const user = await User.findById(req.userId);
     user.posts.push(post);
     await user.save();
-
     res.status(201).json({
       message: 'Post created successfully!',
       post: post,
@@ -71,12 +65,11 @@ exports.createPost = async (req, res, next) => {
     }
     next(err);
   }
-
 };
 
 exports.getPost = async (req, res, next) => {
   const postId = req.params.postId;
-  const post = await Post.findById(postId)
+  const post = await Post.findById(postId);
   try {
     if (!post) {
       const error = new Error('Could not find post.');
@@ -112,8 +105,7 @@ exports.updatePost = async (req, res, next) => {
     throw error;
   }
   try {
-    const post = await Post.findById(postId)
-
+    const post = await Post.findById(postId);
     if (!post) {
       const error = new Error('Could not find post.');
       error.statusCode = 404;
@@ -138,13 +130,13 @@ exports.updatePost = async (req, res, next) => {
     }
     next(err);
   }
-
 };
 
 exports.deletePost = async (req, res, next) => {
   const postId = req.params.postId;
   try {
-    const post = Post.findById(postId)
+    const post = await Post.findById(postId);
+
     if (!post) {
       const error = new Error('Could not find post.');
       error.statusCode = 404;
@@ -164,8 +156,7 @@ exports.deletePost = async (req, res, next) => {
     await user.save();
 
     res.status(200).json({ message: 'Deleted post.' });
-  }
-  catch (err) {
+  } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
     }
