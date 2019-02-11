@@ -62,11 +62,14 @@ app.use((error, req, res, next) => {
   res.status(status).json({ message: message, data: data });
 });
 
+const port = process.env.PORT || 8080;
 mongoose
   .connect(
     'mongodb+srv://afozbek:admin@myprojects-ggr2u.mongodb.net/messages?retryWrites=true'
   )
   .then(result => {
-    app.listen(8080);
+    app.listen(port, '127.0.0.1', () => {
+      console.log(`App listening on ${port}`)
+    });
   })
   .catch(err => console.log(err));
