@@ -6,6 +6,12 @@ const isAuth = require('../middleware/is-auth');
 
 const router = express.Router();
 
+// GET /feed/api/course/1
+router.get('/api/:course/:id', feedController.getApi);
+
+//POST /feed/api
+router.post('/api', feedController.postApi);
+
 // GET /feed/posts
 router.get('/posts', isAuth, feedController.getPosts);
 

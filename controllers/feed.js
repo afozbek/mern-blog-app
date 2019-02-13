@@ -7,6 +7,24 @@ const Post = require('../models/post');
 const User = require('../models/user');
 const io = require('../socket');
 
+let course;
+let id;
+exports.getApi = (req, res, next) => {
+  course = req.params.course;
+  id = req.params.id;
+  res.status(200).json({
+    message: "Getting " + req.url + " successfull",
+    course: course,
+    id: id
+  });
+}
+exports.postApi = (req, res, next) => {
+  res.status(201).json({
+    message: "Posting " + req.url + " successfull",
+    course: course,
+    id: id
+  })
+}
 
 exports.getPosts = async (req, res, next) => {
   const currentPage = req.query.page || 1;
