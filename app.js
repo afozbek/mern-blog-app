@@ -4,9 +4,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
+const graphqlHttp = require('express-graphql');
 
-const feedRoutes = require('./routes/feed');
-const authRoutes = require('./routes/auth');
+const graphqlSchema = require('./graphql/schema');
+const graphqlResolver = require('./graphql/resolvers');
 
 const app = express();
 
@@ -51,8 +52,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/feed', feedRoutes);
-app.use('/auth', authRoutes);
+app.use('/graphql', graphqlHttp({
+  schema: graphqlSchema,
+  rootValue: graphqlResolver
+}));
 
 app.use((error, req, res, next) => {
   console.log(error);
@@ -69,13 +72,8 @@ mongoose
     'mongodb+srv://afozbek:admin@myprojects-ggr2u.mongodb.net/messages?retryWrites=true'
   )
   .then(result => {
-    const server = app.listen(port, '127.0.0.1', () => {
+    app.listen(port, '127.0.0.1', () => {
       console.log(`App listening on ${port}`)
     });
-    const io = require('./socket').init(server);
-
-    io.on('connection', socket => {
-      console.log('Client Connected');
-    })
   })
   .catch(err => console.log(err));
