@@ -11,16 +11,12 @@ const graphqlResolver = require('./graphql/resolvers');
 
 const app = express();
 
-app.use('/images', express.static(path.join(__dirname, 'images')));
-
-const uuidv4 = require('uuid/v4');
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
     cb(null, 'images');
   },
-  filename: function (req, file, cb) {
-    cb(null, uuidv4())
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + '-' + file.originalname);
   }
 });
 
@@ -39,8 +35,9 @@ const fileFilter = (req, file, cb) => {
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
 app.use(
-  multer({ storage: storage, fileFilter: fileFilter }).single('image')
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single('image')
 );
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -49,23 +46,29 @@ app.use((req, res, next) => {
     'OPTIONS, GET, POST, PUT, PATCH, DELETE'
   );
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
   next();
 });
 
-app.use('/graphql', graphqlHttp({
-  schema: graphqlSchema,
-  rootValue: graphqlResolver,
-  graphiql: true,
-  formatError(err) {
-    if (!err.originalError) {
-      return err;
+app.use(
+  '/graphql',
+  graphqlHttp({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver,
+    graphiql: true,
+    formatError(err) {
+      if (!err.originalError) {
+        return err;
+      }
+      const data = err.originalError.data;
+      const message = err.message || 'An error occurred.';
+      const code = err.originalError.code || 500;
+      return { message: message, status: code, data: data };
     }
-    const data = err.originalError.data;
-    const message = err.message || 'An error occurred';
-    const code = err.originalError.code || 500;
-    return { message: message, status: code, data: data };
-  }
-}));
+  })
+);
 
 app.use((error, req, res, next) => {
   console.log(error);
@@ -74,16 +77,13 @@ app.use((error, req, res, next) => {
   const data = error.data;
   res.status(status).json({ message: message, data: data });
 });
-
-
+const MONGODB_URI = 'mongodb+srv://afozbek:admin@myprojects-ggr2u.mongodb.net/messages?retryWrites=true'
 const port = process.env.PORT || 8080;
 mongoose
-  .connect(
-    'mongodb+srv://afozbek:admin@myprojects-ggr2u.mongodb.net/messages?retryWrites=true'
-  )
+  .connect(MONGODB_URI)
   .then(result => {
-    app.listen(port, '127.0.0.1', () => {
-      console.log(`App listening on ${port}`)
+    app.listen(8080, () => {
+      console.log(`Server listening on ${port}`)
     });
   })
   .catch(err => console.log(err));
