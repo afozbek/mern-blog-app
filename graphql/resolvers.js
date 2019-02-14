@@ -102,11 +102,35 @@ module.exports = {
     });
     const createdPost = await post.save();
     user.posts.push(createdPost);
+    await user.save();
+
     return {
       ...createdPost._doc,
       _id: createdPost._id.toString(),
       createdAt: createdPost.createdAt.toISOString(),
       updatedAt: createdPost.updatedAt.toISOString()
     };
+  },
+  getPosts: async function (args, req) {
+    if (!req.isAuth) {
+      const error = new Error('Not Authenticated!');
+      error.code = 401;
+      throw error;
+    }
+    const totalPosts = await Post.find().countDocuments();
+    const posts = await Post.find().sort({ createdAt: -1 }).populate('creator');
+
+    return {
+      posts: posts.map((post) => {
+        return {
+          ...post._doc,
+          _id: post._id.toString(),
+          createdAt: post.createdAt.toISOString(),
+          updatedAt: post.updatedAt.toISOString()
+        };
+      }),
+      totalPosts: totalPosts
+    };
+
   }
 };
