@@ -6,7 +6,7 @@ const User = require('../models/user');
 const Post = require('../models/post');
 
 module.exports = {
-  createUser: async function({ userInput }, req) {
+  createUser: async function ({ userInput }, req) {
     //   const email = args.userInput.email;
     const errors = [];
     if (!validator.isEmail(userInput.email)) {
@@ -38,7 +38,7 @@ module.exports = {
     const createdUser = await user.save();
     return { ...createdUser._doc, _id: createdUser._id.toString() };
   },
-  login: async function({ email, password }) {
+  login: async function ({ email, password }) {
     const user = await User.findOne({ email: email });
     if (!user) {
       const error = new Error('User not found.');
@@ -61,7 +61,13 @@ module.exports = {
     );
     return { token: token, userId: user._id.toString() };
   },
-  createPost: async function({ postInput }, req) {
+  createPost: async function ({ postInput }, req) {
+    if (!req.isAuth) {
+      const error = new Error('Not Authenticated!');
+      error.code = 401;
+      throw error;
+    }
+
     const errors = [];
     if (
       validator.isEmpty(postInput.title) ||
@@ -81,13 +87,21 @@ module.exports = {
       error.code = 422;
       throw error;
     }
+    const user = await User.findById(req.userId);
+    if (!user) {
+      const error = new Error('Invalid user.');
+      error.code = 401;
+      throw error;
+    }
+
     const post = new Post({
       title: postInput.title,
       content: postInput.content,
-      imageUrl: postInput.imageUrl
+      imageUrl: postInput.imageUrl,
+      creator: user
     });
     const createdPost = await post.save();
-    // Add post to users' posts
+    user.posts.push(createdPost);
     return {
       ...createdPost._doc,
       _id: createdPost._id.toString(),
