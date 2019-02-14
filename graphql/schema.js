@@ -26,7 +26,7 @@ module.exports = buildSchema(`
     }
 
     type PostData {
-        posts: [Post!]
+        posts: [Post!]!
         totalPosts: Int!
     }
 
@@ -43,8 +43,9 @@ module.exports = buildSchema(`
     }
 
     type RootQuery {
-        login(email: String!, password: String!):AuthData!
-        getPosts: PostData!
+        login(email: String!, password: String!): AuthData!
+        posts(page: Int): PostData!
+        post(id: ID!): Post!
     }
 
     type RootMutation {

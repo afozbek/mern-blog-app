@@ -6,7 +6,7 @@ const User = require('../models/user');
 const Post = require('../models/post');
 
 module.exports = {
-  createUser: async function ({ userInput }, req) {
+  createUser: async function({ userInput }, req) {
     //   const email = args.userInput.email;
     const errors = [];
     if (!validator.isEmail(userInput.email)) {
@@ -38,7 +38,7 @@ module.exports = {
     const createdUser = await user.save();
     return { ...createdUser._doc, _id: createdUser._id.toString() };
   },
-  login: async function ({ email, password }) {
+  login: async function({ email, password }) {
     const user = await User.findOne({ email: email });
     if (!user) {
       const error = new Error('User not found.');
@@ -61,13 +61,12 @@ module.exports = {
     );
     return { token: token, userId: user._id.toString() };
   },
-  createPost: async function ({ postInput }, req) {
+  createPost: async function({ postInput }, req) {
     if (!req.isAuth) {
-      const error = new Error('Not Authenticated!');
+      const error = new Error('Not authenticated!');
       error.code = 401;
       throw error;
     }
-
     const errors = [];
     if (
       validator.isEmpty(postInput.title) ||
@@ -93,7 +92,6 @@ module.exports = {
       error.code = 401;
       throw error;
     }
-
     const post = new Post({
       title: postInput.title,
       content: postInput.content,
@@ -103,7 +101,6 @@ module.exports = {
     const createdPost = await post.save();
     user.posts.push(createdPost);
     await user.save();
-
     return {
       ...createdPost._doc,
       _id: createdPost._id.toString(),
@@ -111,26 +108,51 @@ module.exports = {
       updatedAt: createdPost.updatedAt.toISOString()
     };
   },
-  getPosts: async function (args, req) {
+  posts: async function({ page }, req) {
     if (!req.isAuth) {
-      const error = new Error('Not Authenticated!');
+      const error = new Error('Not authenticated!');
       error.code = 401;
       throw error;
     }
+    if (!page) {
+      page = 1;
+    }
+    const perPage = 2;
     const totalPosts = await Post.find().countDocuments();
-    const posts = await Post.find().sort({ createdAt: -1 }).populate('creator');
-
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * perPage)
+      .limit(perPage)
+      .populate('creator');
     return {
-      posts: posts.map((post) => {
+      posts: posts.map(p => {
         return {
-          ...post._doc,
-          _id: post._id.toString(),
-          createdAt: post.createdAt.toISOString(),
-          updatedAt: post.updatedAt.toISOString()
+          ...p._doc,
+          _id: p._id.toString(),
+          createdAt: p.createdAt.toISOString(),
+          updatedAt: p.updatedAt.toISOString()
         };
       }),
       totalPosts: totalPosts
     };
-
+  },
+  post: async function({ id }, req) {
+    if (!req.isAuth) {
+      const error = new Error('Not authenticated!');
+      error.code = 401;
+      throw error;
+    }
+    const post = await Post.findById(id).populate('creator');
+    if (!post) {
+      const error = new Error('No post found!');
+      error.code = 404;
+      throw error;
+    }
+    return {
+      ...post._doc,
+      _id: post._id.toString(),
+      createdAt: post.createdAt.toISOString(),
+      updatedAt: post.updatedAt.toISOString()
+    };
   }
 };
