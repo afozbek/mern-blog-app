@@ -62,6 +62,7 @@ class App extends Component {
       query: `
         query login($email: String!, $password: String!){
           login(email: $email, password: $password) {
+            message
             token
             userId
           }
@@ -90,6 +91,7 @@ class App extends Component {
           );
         }
         if (resData.errors) {
+          resData.errors[0].message = 'Giris basarisiz!';
           console.log(resData);
           throw new Error('User login failed!');
         }

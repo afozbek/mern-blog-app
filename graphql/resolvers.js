@@ -60,7 +60,11 @@ module.exports = {
       'somesupersecretsecret',
       { expiresIn: '1h' }
     );
-    return { token: token, userId: user._id.toString() };
+    return {
+      message: `Hoşgeldiniz ${user.name}`,
+      token: token,
+      userId: user._id.toString()
+    };
   },
   createPost: async function ({ postInput }, req) {
     if (!req.isAuth) {

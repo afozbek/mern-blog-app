@@ -23,6 +23,7 @@ module.exports = buildSchema(`
     type AuthData {
         token: String!
         userId: String!
+        message: String!
     }
 
     type PostData {
